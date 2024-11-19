@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.restdemo.mapper.UserMapper">
+    <!-- 권한 읽기 -->
+    <select id="readAuthorities" parameterType="String" resultType="org.springframework.security.core.authority.SimpleGrantedAuthority">
+        SELECT       auth
+        FROM         auth
+        WHERE          1=1
+        AND            username = #{username}
+    </select>
+
+    <!-- 회원 불러오기 -->
+    <select id="readUser" parameterType="String" resultType="User">
+        SELECT         *
+        FROM         user
+        WHERE         1=1
+        AND            username   =   #{username}
+    </select>
+
+    <!-- 회원 등록 -->
+    <insert id="createUser" parameterType="User">
+        INSERT INTO user (
+        username,
+        password,
+        name,
+        email,
+        address,
+        number
+        ) VALUES (
+        #{username},
+        #{password},
+        #{name},
+        #{email},
+        #{address},
+        #{number}
+        )
+    </insert>
+    
+	<!-- 회원 정보 업데이트 -->
+	<update id="updateUser" parameterType="User">
+   		UPDATE user
+   		<set>
+        	<if test="name != null">name = #{name},</if>
+        	<if test="email != null">email = #{email},</if>
+        	<if test="number != null">number = #{number},</if>
+        	<if test="address != null">address = #{address},</if>
+        	<if test="point != null">point = #{point}</if>
+    	</set>
+    	WHERE `index` = #{index}
+	</update>
+    
+    <!-- 회원 목록 불러오기 -->
+    <select id="readUserList" resultType="User">
+        SELECT         *
+        FROM         user
+        ORDER BY `index` asc
+    </select>
+    
+    <!-- 회원 삭제하기 -->
+    <delete id="deleteUser" parameterType="String">
+        DELETE
+        FROM         user
+        WHERE        username   =   #{username}
+    </delete>
+
+    <!-- 유저 권한 추가 -->
+    <insert id="createAuthority" parameterType="org.springframework.security.core.GrantedAuthority">
+        INSERT INTO auth (
+        u_id,
+        u_auth
+        ) VALUES
+        <foreach item="authority" index="index" collection="authorities" separator=",">
+            (#{username}, #{authority.role})
+        </foreach>
+        ON DUPLICATE KEY
+        UPDATE
+        u_id = #{username}
+    </insert>
+
+</mapper>

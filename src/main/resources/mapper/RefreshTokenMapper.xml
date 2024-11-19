@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.restdemo.mapper.RefreshTokenMapper">
+
+    <resultMap type="com.restdemo.domain.RefreshToken" id="RefreshTokenMap">
+        <id column="rt_id" property="id" />
+        <result column="rt_refresh_token" property="token" />
+        <result column="rt_expiry_date" property="expiryDate" />
+        <association property="user" javaType="User">
+            <id column="username" property="username" />
+            <result column="name" property="name" />
+        </association>
+    </resultMap>
+
+    <select id="findByToken" parameterType="String" resultMap="RefreshTokenMap">
+        SELECT      ta.rt_id,
+                    ta.rt_refresh_token,
+                    ta.rt_expiry_date,
+                    tb.username,
+                    tb.name
+        FROM        refresh_token ta
+        LEFT JOIN   user tb ON ta.username = tb.username
+        WHERE       ta.rt_refresh_token = #{user.username}
+    </select>
+    
+    <select id="findRefreshTokenByUsername" parameterType="String" resultMap="RefreshTokenMap">
+        SELECT      *
+        FROM        refresh_token
+        WHERE       username = #{user.username}
+        AND			rt_expiry_date > NOW()
+    </select>
+
+    <insert id="createRefreshToken" parameterType="RefreshToken" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO refresh_token (
+            rt_refresh_token,
+            rt_expiry_date,
+            username
+        ) VALUES (
+            #{token},
+            #{expiryDate},
+            #{user.username}
+        )
+    </insert>
+
+    <delete id="deleteRefreshToken" parameterType="RefreshTokenRequestDTO">
+        DELETE 
+        FROM refresh_token 
+        WHERE rt_refresh_token = #{token}
+    </delete>
+</mapper>
